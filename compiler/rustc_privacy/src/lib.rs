@@ -193,11 +193,6 @@ where
             | ty::Closure(def_id, ..)
             | ty::CoroutineClosure(def_id, ..)
             | ty::Coroutine(def_id, ..) => {
-                if let ty::Adt(..) = ty_kind
-                    && !self.visited_tys.insert(ty)
-                {
-                    return V::Result::output();
-                }
                 try_visit!(self.def_id_visitor.visit_def_id(def_id, "type", &ty));
                 if V::SHALLOW {
                     return V::Result::output();
@@ -226,6 +221,9 @@ where
                     // as visible/reachable even if `Type` is private.
                     // Ideally, associated types should be instantiated in the same way as
                     // free type aliases, but this isn't done yet.
+                    return V::Result::output();
+                }
+                if !self.visited_tys.insert(ty) {
                     return V::Result::output();
                 }
 
